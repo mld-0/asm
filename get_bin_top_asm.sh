@@ -12,7 +12,7 @@ set -o pipefail  # don't hide errors within pipes
 set -E;
 trap '[ "$?" -ne 2 ] || exit 2' ERR
 
-flag_debug=1
+flag_debug=0
 
 asm_arch_default='x86_64'
 asm_arch_default='arm64e'
@@ -105,6 +105,7 @@ top_asm_instructions() {
 	top_instructions=$( echo "$binary_asm_instructions_counted" | perl -lane 'print @F[1]' )
 
 	if [[ $flag_counts -ne 0 ]]; then
+		echo "total:$tab$binary_asm_instructions_lines"
 		paste -d "$tab" <(echo -e "$top_instructions") <(echo -e "$top_instructions_counts")
 	else
 		echo "$top_instructions" 
