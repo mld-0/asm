@@ -6,8 +6,23 @@ set -o errexit   # abort on nonzero exitstatus
 set -o nounset   # abort on unbound variable
 set -o pipefail  # don't hide errors within pipes
 
+#	Allow subshell 'exit 2' to terminate script
+set -E;
+trap '[ "$?" -ne 2 ] || exit 2' ERR
+
+nl=$'\n'
+tab=$'\t'
+
+flag_debug=1
+log_debug() {
+	#	{{{
+	if [[ $flag_debug -ne 0 ]]; then
+		echo "$@" > /dev/stderr
+	fi
+}
+#	}}}
+
 path_binary_top_asm_instructions="binary_top_asm_instructions.sh"
-path_build_cpp=""
 CC=g++
 gpp_flags=( --std=c++17 -O0 )
 arch_default='arm64'
@@ -21,45 +36,64 @@ fi
 #	}}}
 
 test_binary_top_asm_instructions() {
+	#	{{{
+	local func_name=""
+	if [[ -n "${ZSH_VERSION:-}" ]]; then 
+		func_name=${funcstack[1]:-}
+	elif [[ -n "${BASH_VERSION:-}" ]]; then
+		func_name="${FUNCNAME[0]:-}"
+	else
+		printf "%s\n" "warning, func_name unset, non zsh/bash shell" > /dev/stderr
+	fi
+	#	}}}
 	local path_source="$1"
 	local arch="${2:-$arch_default}"
-	local path_bin=$( echo "$path_source" | sed 's/\.[^.]*$//' )
+	local path_bin=$( dirname "$path_source" )"/bin/"$( echo "$path_source" | sed 's/\.[^.]*$//' )
 
 	#	validate: path_source, path_bin, arch
 	#	{{{
+	if [[ ! -d `dirname $path_bin` ]]; then
+		log_debug "$func_name, mkdir `dirname $path_bin`"
+		mkdir `dirname $path_bin`
+	fi
 	if [[ ! -f "$path_source" ]]; then
-		echo "error, not found, path_source=($path_source)" > /dev/stderr
+		log_debug "$func_name, error, not found, path_source=($path_source)"
 		exit 2
 	fi
-	if [[ -z "$path_bin" ]]; then
-		echo "error, empty path_bin=($path_bin)" > /dev/stderr
+	if [[ -z "`basename $path_bin`" ]]; then
+		log_debug "$func_name, error, empty (basename path_bin=($path_bin))"
 		exit 2
 	fi
-	if [[ "$path_bin" = "$path_source" ]]; then
-		echo "error, path_bin=($path_bin) == path_source($path_source)" > /dev/stderr
+	if [[ "`basename $path_bin`" = "$path_source" ]]; then
+		log_debug "$func_name, error, (basename path_bin=($path_bin)) == path_source($path_source)"
 		exit 2
 	fi
 	if [[ -z "$arch" ]]; then
-		echo "error, empty arch=($arch)" > /dev/stderr
+		log_debug "$func_name, error, empty arch=($arch)"
 		exit 2
 	fi
 	#	}}}
 
-	echo "path_source=($path_source)" > /dev/stderr
-	echo "path_bin=($path_bin)" > /dev/stderr
-	echo "CC=($CC), arch=($arch), gpp_flags=(${gpp_flags[@]})" > /dev/stderr
+	log_debug "$func_name, path_source=($path_source)"
+	log_debug "$func_name, path_bin=($path_bin)"
 
-	$CC ${gpp_flags[@]} -arch "$arch" "$path_source" -o "$path_bin"
+	build_cmd=( $CC ${gpp_flags[@]} -arch "$arch" "$path_source" -o "$path_bin" )
+	log_debug "$func_name, build_cmd=(${build_cmd[@]})"
+
+	${build_cmd[@]}
 
 	#	validate existance: path_bin
 	#	{{{
 	if [[ ! -f "$path_bin" ]]; then
-		echo "error, not found, path_bin=($path_bin)" > /dev/stderr
+		log_debug "$func_name, error, not found, path_bin=($path_bin)"
 		exit 2
 	fi
 	#	}}}
 
-	$SHELL $path_binary_top_asm_instructions --counts --arch "$arch" "$path_bin"
+	top_asm_command=( $SHELL $path_binary_top_asm_instructions --counts --arch "$arch" "$path_bin" )
+	log_debug "$func_name, top_asm_command=(${top_asm_command[@]})"
+
+	${top_asm_command[@]}
 
 	echo "" 2> /dev/stderr
 }

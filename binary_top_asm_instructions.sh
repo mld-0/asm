@@ -12,7 +12,7 @@ set -o pipefail  # don't hide errors within pipes
 set -E;
 trap '[ "$?" -ne 2 ] || exit 2' ERR
 
-flag_debug=0
+flag_debug=1
 
 asm_arch_default='x86_64'
 asm_arch_default='arm64e'
@@ -86,27 +86,26 @@ top_asm_instructions() {
 	fi
 	#	}}}
 
-	log_debug "path_binary=($path_binary)"
-	log_debug "asm_arch=($asm_arch)"
-	log_debug "flag_counts=($flag_counts)"
+	log_debug "$func_name, path_binary=($path_binary)"
+	log_debug "$func_name, asm_arch=($asm_arch)"
+	log_debug "$func_name, flag_counts=($flag_counts)"
 
 	is_binary_type_arch "$path_binary" "$asm_arch"
 
 	binary_asm=$( $bin_otool -arch $asm_arch -tV -X "$path_binary" )
 	binary_asm_lines=$( echo "$binary_asm" | wc -l )
-	log_debug "binary_asm_lines=($binary_asm_lines)"
+	log_debug "$func_name, binary_asm_lines=($binary_asm_lines)"
 
 	binary_asm_instructions=$( get_instructions_list_from_otool_output "$binary_asm" ) 
 	binary_asm_instructions_counted=$( echo "$binary_asm_instructions" | sort | uniq -c | sort -r )
 	binary_asm_instructions_lines=$( echo "$binary_asm_instructions" | wc -l )
-	log_debug "binary_asm_instructions_lines=($binary_asm_instructions_lines)"
+	log_debug "$func_name, binary_asm_instructions_lines=($binary_asm_instructions_lines)"
 
 	top_instructions_counts=$( echo "$binary_asm_instructions_counted" | perl -lane 'print @F[0]' )
 	top_instructions=$( echo "$binary_asm_instructions_counted" | perl -lane 'print @F[1]' )
 
 	if [[ $flag_counts -ne 0 ]]; then
-		echo "$binary_asm_instructions_counted" | sed 's/^\s*//'
-		echo "total: $binary_asm_instructions_lines"
+		paste -d "$tab" <(echo -e "$top_instructions") <(echo -e "$top_instructions_counts")
 	else
 		echo "$top_instructions" 
 	fi
