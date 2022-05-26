@@ -35,7 +35,7 @@ fi
 #	}}}
 
 main() {
-	local path_source="heap-vs-stack-array.cpp"
+	local path_source="src/heap-vs-stack-array.cpp"
 	local arch="arm64"
 	test_binary_top_asm_instructions "$path_source" "$arch"
 	arch="x86_64"
@@ -56,7 +56,11 @@ test_binary_top_asm_instructions() {
 	#	}}}
 	local path_source="$1"
 	local arch="${2:-$arch_default}"
-	local path_bin=$( dirname "$path_source" )"/bin/"$( echo "$path_source" | sed 's/\.[^.]*$//' )
+	local path_source_parent_dir=$( realpath $( dirname "$path_source" )"/.." )"/"
+	local path_source_basename=$( basename "$path_source" )
+	echo "path_source_parent_dir=($path_source_parent_dir)"
+
+	local path_bin="$path_source_parent_dir/bin/"$( echo "$path_source_basename" | sed 's/\.[^.]*$//' )
 	#	validate: path_source, path_bin, arch
 	#	{{{
 	if [[ ! -d `dirname $path_bin` ]]; then
