@@ -34,6 +34,15 @@ if [[ ! -f "$path_get_bin_top_asm" ]]; then
 fi
 #	}}}
 
+main() {
+	local path_source="heap-vs-stack-array.cpp"
+	local arch="arm64"
+	test_binary_top_asm_instructions "$path_source" "$arch"
+	arch="x86_64"
+	test_binary_top_asm_instructions "$path_source" "$arch"
+	echo "done" > /dev/stderr
+}
+
 test_binary_top_asm_instructions() {
 	#	{{{
 	local func_name=""
@@ -109,15 +118,6 @@ get_top_asm_commands() {
 	top_asm_command=( $SHELL $path_get_bin_top_asm --counts --arch "$arch" "$path_bin" )
 	log_debug "$func_name, top_asm_command=(${top_asm_command[@]})"
 	${top_asm_command[@]}
-}
-
-main() {
-	local path_source="heap-vs-stack-array.cpp"
-	local arch="arm64"
-	test_binary_top_asm_instructions "$path_source" "$arch"
-	arch="x86_64"
-	test_binary_top_asm_instructions "$path_source" "$arch"
-	echo "done" > /dev/stderr
 }
 
 check_sourced=1
