@@ -18,6 +18,8 @@ asm_arch_default='x86_64'
 asm_arch_default='arm64e'
 asm_arch_default='arm64'
 
+bin_otool=otool
+
 log_debug() {
 	#	{{{
 	if [[ $flag_debug -ne 0 ]]; then
@@ -90,7 +92,7 @@ top_asm_instructions() {
 
 	is_binary_type_arch "$path_binary" "$asm_arch"
 
-	binary_asm=$( otool -arch $asm_arch -tV -X "$path_binary" )
+	binary_asm=$( $bin_otool -arch $asm_arch -tV -X "$path_binary" )
 	binary_asm_lines=$( echo "$binary_asm" | wc -l )
 	log_debug "binary_asm_lines=($binary_asm_lines)"
 
@@ -121,15 +123,26 @@ is_binary_type_arch() {
 		printf "%s\n" "warning, func_name unset, non zsh/bash shell" > /dev/stderr
 	fi
 	#	}}}
-	local path_binary="${1:-}"
-	local asm_arch="${2:-}"
-	tmp_str=$( file "$path_binary" )
-	if [[ -z `echo "$tmp_str" | grep "executable"` ]]; then
-		echo "$func_name, error, file is not type 'executable'$nl$tmp_str" > /dev/stderr
+	local path_binary="$1"
+	local asm_arch="$2"
+	#	validate: path_binary, asm_arch
+	#	{{{
+	if [[ ! -e "$path_binary" ]]; then
+		echo "$func_name, error, not found, path_binary=($path_binary)" > /dev/stderr
 		exit 2
 	fi
-	if [[ -z `echo "$tmp_str" | grep "\b$asm_arch\b"` ]]; then
-		echo "$func_name, error, file is not type '$asm_arch'$nl$tmp_str" > /dev/stderr
+	if [[ -z "$asm_arch" ]]; then
+		echo "$func_name, error, empty asm_arch=($asm_arch)" > /dev/stderr
+		exit 2
+	fi
+	#	}}}
+	file_report_str=$( file "$path_binary" )
+	if [[ -z `echo "$file_report_str" | grep "\bexecutable\b"` ]]; then
+		echo "$func_name, error, file is not type 'executable'$nl$file_report_str" > /dev/stderr
+		exit 2
+	fi
+	if [[ -z `echo "$file_report_str" | grep "\b$asm_arch\b"` ]]; then
+		echo "$func_name, error, file is not type '$asm_arch'$nl$file_report_str" > /dev/stderr
 		exit 2
 	fi
 }
