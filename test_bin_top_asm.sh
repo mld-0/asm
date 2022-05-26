@@ -22,7 +22,7 @@ log_debug() {
 }
 #	}}}
 
-path_binary_top_asm_instructions="binary_top_asm_instructions.sh"
+path_binary_top_asm_instructions="get_bin_top_asm.sh"
 CC=g++
 gpp_flags=( --std=c++17 -O0 )
 arch_default='arm64'
