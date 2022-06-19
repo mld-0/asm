@@ -28,3 +28,4 @@ Memory:
 	(or 0, 4, 8, 12, 16)
 	(Values of memory is initially 0xaaaaaaaa)
 
+Little-Endian: LHS = Most significant bit 
