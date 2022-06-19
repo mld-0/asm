@@ -1,0 +1,30 @@
+CPUlator 
+Architecture: ARMv7
+System: ARMv7 DE1-SoC
+LINK: https://cpulator.01xz.net/?sys=nios-de1soc
+
+Registers r0-r23 (32bits / 4bytes / 1word)
+r0-r6: General Purpose
+r7: Syscalls
+
+sp: stack pointer (initial value 00000000)
+	Address of next <(available?)> piece of memory on the stack
+
+lr: link register
+	Function return address
+
+pc: program counter
+	next instruction to execute
+
+cpsr: 
+	Information about previous operation (eg: was result negative, zero, has overflow, ect.)
+
+spsr:
+	<>
+
+Memory:
+	Each location in memory has an address, starting at 0 and increasing by +4 (in hex):
+	0x00000000, 0x00000004, 0x00000008, 0x0000000c, 0x00000010 
+	(or 0, 4, 8, 12, 16)
+	(Values of memory is initially 0xaaaaaaaa)
+
