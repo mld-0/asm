@@ -48,13 +48,13 @@
 //			svc{cond} #imm
 
 
-//	Entrypoint is '_main' for macOS, '_start' for Linux
-.global _main
+//	Default entry-point is '_main' for macOS, '_start' for Linux
+.global _start
 
-//	must start on 64-bit boundary
+//	Must start on 64-bit boundary
 .align 2
 
-_main:
+_start:
 	//	1 = stdout
 	mov x0, #1
 
