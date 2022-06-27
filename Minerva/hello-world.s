@@ -24,7 +24,7 @@
 //		X30			(LR) link register
 //	Special
 //		SP			stack pointer
-//		PC			program counter
+//		PC			program counter (address of current instruction)
 //		NZCV		global condition flag 
 //		FPSR		floating point status
 //		FPCR		floating point control
@@ -48,6 +48,7 @@
 //			svc{cond} #imm
 
 
+//	Entrypoint is '_main' for macOS, '_start' for Linux
 .global _main
 
 //	must start on 64-bit boundary
@@ -60,6 +61,7 @@ _main:
 	//	output string
 	//	<(can't use ldr?)>
 	adr x1, helloworld
+	//ldr x1, =helloworld
 
 	//	12 = length of string
 	mov x2, #12

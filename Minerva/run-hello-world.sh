@@ -7,5 +7,9 @@
 clang -c "hello-world.s" -o "hello-world.o"
 clang "hello-world.o" -o "hello-world"
 
+#	or:
+#as "hello-world.s" -o "hello-world.o" 
+#ld "hello-world.o" -lSystem -syslibroot `xcrun -sdk macosx --show-sdk-path` -arch arm64 -o "hello-world"
+
 ./hello-world
 
