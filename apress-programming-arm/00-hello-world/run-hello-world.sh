@@ -1,0 +1,1 @@
+../../Minerva/run-hello-world.sh
