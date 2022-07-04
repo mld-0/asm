@@ -8,6 +8,7 @@
 //	Ongoing: 2022-07-02T11:22:01AEST (loading into X2) Use (ascending) (more readable) example value? '0x0123456789ABCDEF'(?)
 //	Ongoing: 2022-07-02T12:12:01AEST (if the problem (with shift versions of MOV) is with clang) (compile assembly for macOS-on-ARM with gnu-gcc?)
 //	}}}
+//	TODO: 2022-07-04T15:57:33AEST output register result values (hex/decimal)
 
 //	Two's Complement
 //	The N-bit representation of -n in binary is: 2**N - n
@@ -26,8 +27,8 @@
 //	'MOV' is an alias. 'MOV X0, X1' is implemented as 'ORR X0, XZR, X1'
 
 //	Forms of MOV:
-//			MOVK XD, #imm16{, LSL, #shift}
-//			MOV XD, #imm16{, LSL, #shift}
+//			MOVK XD, #imm16{, LSL #shift}
+//			MOV XD, #imm16{, LSL #shift}
 //			MOV XD, XS
 //			MOV XD, operand2
 //			MOVN XD, operand2
@@ -35,7 +36,7 @@
 
 
 
-//	Carry flag: <(set when the result of an integer operation overflows)>
+//	Carry flag: <(set when the result of an integer operation overflows (and we are using a supported instruction))>
 //	Barrel shifter: allows shifts to be applied to instruction Operand2 (before it is loaded)
 
 //	Shifting and Rotating:
@@ -44,19 +45,19 @@
 
 //	0000 0011 << 3 = 0001 1000
 
-//	logical shift left
+//	logical shift left LSL
 //	zeros come in from the right, last bit shifted out becomes the carry flag
 //	multiply by 2**n
 
-//	logical shift right
+//	logical shift right LSR
 //	zeros come in from the left, last bit shifted out becomes the carry flag
 //	unsigned division by 2**n
 
-//	arithmetic shift right
+//	arithmetic shift right ASR
 //	one comes in from the left if the number is negative, zero if it is positive
 //	signed division by 2**n
 
-//	rotate right
+//	rotate right ROR
 //	bits that leave on the right reappear on the left
 
 //	rotate left
@@ -122,11 +123,37 @@
 //	Loads the logical-not of the value that the equivalent move would load.
 
 
+
+//	Add:
+//	ADD{S} Xd, Xs, Operand2
+//			S				set condition flags
+//			Xd				destination register
+//			Xs				source register
+//	Operand2:
+//			X2, LSL #1		Register and a shift
+//			X2, SXTB 2		Register and an extension operand
+
+//	Add-with-carry:
+//			ADC{S} Xd, Xs, Operand2
+//	Add values, then add value of carry flag
+//	Used to synthesize multi-word arithmetic
+
+//	Subtract:
+//			SUB{S} Xd, Xs, Operand2
+
+//	Subtract-with-carry:
+//			SUBC{S} Xd, X2, Operand2
+//	Subtract values, then subtract value of carry flag
+//	Used to synthesize multi-word arithmetic
+
+
 .global _start
 
 .align 2
 
 _start:
+
+//	Loading and Shifting:
 
 	//	load 0x1234FEDC4F5D6E3A into X2: 
 	mov x2,  #0x6E3A
@@ -150,7 +177,7 @@ _start:
 	ror x1, x2, #1
 
 	//	If the immediate value can be created by shifting a 16-bit number, the assembler will make that subsitution
-	//	Ongoing: 2022-07-02T12:22:26AEST (assembler will not make subsitution?)
+	//	Ongoing: 2022-07-02T12:22:26AEST (assembler will not make subsitution?) 
 	mov x1, #0xAB000000
 
 	//	Error, cannot be used:
@@ -169,10 +196,42 @@ _start:
 	//	<>
 
 
+//	Addition and Subtraction:
 
-	//	Continue: 2022-07-02T12:33:54AEST ADD/ADC, SUB/SBC
-	//	Continue: 2022-07-02T12:34:22AEST (using ch03 debugger material) run (step-through) example, displaying register values
+	//	add x1 + x2
+	mov x1, #1
+	mov x2, #2
+	add x1, x1, x2
 
+	//	128-bit addition: (x0,x1) = (x2,x3) + (x4,x5)
+	mov x2, #0x0000000000000003
+	mov x3, #0xFFFFFFFFFFFFFFFF
+	mov x4, #0x0000000000000005
+	mov x5, #0x0000000000000001
+	//	add lower order bits
+	adds x1, x3, x5
+	//	add higher order bits
+	adc x0, x2, x4
+
+
+	//	subtract x1 - x2
+	mov x1, #4
+	mov x2, #1
+	sub x1, x1, x2
+
+	//	128-bit subtraction: (x0,x1) = (x2,x3) - (x4,x5)
+	mov x2, #0x0000000000000005
+	mov x3, #0x0000000000000001
+	mov x4, #0x0000000000000003
+	mov x5, #0xFFFFFFFFFFFFFFFF
+	//	subtract
+	subs x1, x3, x5
+	sbc x0, x2, x4
+	//	Ongoing: 2022-07-04T16:00:50AEST 128bit subtraction is correct?
+
+
+	//	Continue: 2022-07-02T12:34:22AEST (using ch03 debugger material) run (step-through) examples, displaying register values (hex/decimal)
+	//	<>
 
 
 	//	Write 'donemsg'
@@ -182,7 +241,7 @@ _start:
 	mov x16, #4			//	4 = write syscall
 	svc 0
 
-	//	macOS 'exit' syscall
+	//	macOS 'exit' syscall, return x0
 	mov x0, #0
 	mov x16, #1
 	svc 0
