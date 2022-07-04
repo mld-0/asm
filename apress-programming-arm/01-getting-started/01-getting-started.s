@@ -99,3 +99,11 @@
 
 //	Assembly uses the same comments as C/C++: '//' and '/**/'
 
+//	Conditional flags: NZCV
+//		N	Negative:			1 if signed value is negative
+//		Z	Zero:				1 if result is 0 (denote equal comparison)
+//		C	Carry:				1 if addition overflowed / subtraction requires borrow, or value of last bit shifted out
+//		V	Overflow:			1 if signed addition / subtraction overflow occured, or an error condition
+//	Only set by instructions appended with 'S'
+//	<(Accessed through OS privileged instructions. User mode programs do not directly access the register)>
+
