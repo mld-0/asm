@@ -70,7 +70,7 @@ _start:
 	mov x16, #4
 	svc 0
 
-	//	macOS 'exit' syscall, returning 0
+	//	macOS 'exit' syscall, return x0 
 	mov x0, #0
 	mov x16, #1
 	svc 0
