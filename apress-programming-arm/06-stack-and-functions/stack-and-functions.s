@@ -33,12 +33,13 @@
 //	Branch with Link:
 //			BL label
 //	Used for calling functions, stores address of following instruction in LR.
+//	Continue: 2022-07-09T15:31:49AEST what does BL set?
 
 //	Return:
 //			RET
 //	Resume execution at location in LR.
 
-//	A function that calls other functions must push LR (Link-Register) onto the stack before the call, then pop it back after returning. This has a small overhead, but can be good practice in-case function calls are added later.
+//	A function that calls other functions must push LR (Link-Register) onto the stack before the call, then pop it back after returning. Even for functions that do not call other functions, this is good practice in-case function calls are added later.
 //		myfunc1:	STR LR, [SP, #-16]!		//	push LR
 //					BL myfunc2
 //					LDR LR, [SP], #16		//	pop LR
@@ -103,12 +104,6 @@ _start:
 	add x1, x1, outstr@PAGEOFF
 	mov x2, #255			//	max_len(outstr)
 	bl 		toupper
-	mov x2, x0 					//	len(outstr)
-	mov x0, #1					//	1 = stdout
-	adrp 	x1, outstr@PAGE
-	add x1, x1, outstr@PAGEOFF
-	mov x16, #4					//	4 = write syscall
-	svc 0
 
 	
 	//	Call 'hex2str(x0, hexstr)
@@ -116,15 +111,7 @@ _start:
 	movk x0, #0x1234, LSL #16
 	movk x0, #0xABCD, LSL #32
 	movk x0, #0x1234, LSL #48
-	adrp 	x1, hexstr@PAGE
-	add x1, x1, hexstr@PAGEOFF
 	bl 		hex2str
-	mov x0, #1								//	1 = stdout
-	adrp 	x1, hexstr@PAGE
-	add x1, x1, hexstr@PAGEOFF
-	mov x2, #19								//	len(hexstr)
-	mov x16, #4								//	4 = write syscall
-	svc 0
 
 
 	//	Store variables on stack using SP
@@ -143,6 +130,7 @@ fpexample:
 	//	Ongoing: 2022-07-09T15:00:33AEST when does FP get set? 
 	//	Ongoing: 2022-07-09T15:02:00AEST does our example need to store LR/FP when it does not call any functions?
 	//	Continue: 2022-07-09T14:59:09AEST Example use of FP
+	//	{{{
 	//.equ var1, 0
 	//.equ var2, -8
 	//.equ sum, -12
@@ -157,6 +145,7 @@ fpexample:
 	//ldr x0, [sp, 
 	//add sp, sp, #32							//	decrease stack 16-bytes
 	//ldp lr, fp, [sp], #16					//	restore LR, FP from stack
+	//	}}}
 	ret
 fpexamplecontinue:
 
@@ -178,10 +167,7 @@ fpexamplecontinue:
 	donemsg: .asciz "Done\n"
 
 	.align 4
-	hexstr: .asciz "0x0000000000000000\n"
-
-	.align 4
-	instr: .asciz "This is our Test STring that wE will convert to upper\n"
+	instr: .asciz "This is our Test STring that wE will convert to upper"
 	.align 4
 	outstr: .fill 255, 1, 0
 

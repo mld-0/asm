@@ -12,9 +12,10 @@
 //		x1			pointer into output string
 //		x2			buffer max len 
 //	Registers:
-//		x4			x1 (output string) initial pointer
+//		x4			output string pointer
 //		w5			current character
 //		x6			loop count
+//		x7			input string pointer 
 //	Returns:
 //		x0			length of converted string
 
@@ -23,25 +24,45 @@
 .align 2
 
 toupper:
-	str lr, [sp, #-16]!		//	Push LR
 	mov x4, x1
-	mov x6, #0				//	initalize counter
+	mov x7, x0
+	mov x6, #0					//	initalize counter
 toupperloop:
-	ldrb w5, [x0], #1		//	w5 = [x0]++
-	cmp w5, #'z'			//	skip conversion if not lower
+	ldrb w5, [x7], #1			//	w5 = [x7]++
+	cmp w5, #'z'				//	skip conversion if not lower
 	b.gt 	toupcontinue
-	cmp w5, #'a'			//	skip conversion if not lower
+	cmp w5, #'a'				//	skip conversion if not lower
 	b.lt 	toupcontinue
-	sub w5, w5, #('a'-'A')	//	convert to uppercase
+	sub w5, w5, #('a'-'A')		//	convert to uppercase
 toupcontinue:
-	cmp x6, x2 				//	break if x6 >= x2
+	cmp x6, x2 					//	break if x6 >= x2
 	b.ge 	toupbreak
-	strb w5, [x1], #1		//	[x1]++ = w5
-	add x6, x6, #1			//	x6++
-	cmp w5, #0				//	continue if w5 is not null-byte
+	strb w5, [x4], #1			//	[x4]++ = w5
+	add x6, x6, #1				//	x6++
+	cmp w5, #0					//	continue if w5 is not null-byte
 	b.ne 	toupperloop
 toupbreak:
-	sub	x0, x1, x4  		//	Return length of string placed in x0
-	ldr lr, [sp], #16		//	Pop LR
+	sub	x0, x4, x1  			//	Return length of string placed in x0
+
+	//	Print 'outstr' (result)
+	mov x2, x0 					//	len(outstr)
+	mov x0, #1					//	1 = stdout
+	mov x16, #4					//	4 = write syscall
+	svc 0
+
+	//	Print newline:
+	mov x0, #1					//	1 = stdout
+	adrp 	x1, nl@PAGE
+	add x1, x1, nl@PAGEOFF
+	mov x2, #1					//	len(outstr)
+	mov x16, #4					//	4 = write syscall
+	svc 0
+
+
+	mov x0, x2					//	Return length of string placed in x0
 	ret	
+
+.data
+	.align 4
+	nl: .asciz "\n"
 
