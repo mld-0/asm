@@ -9,13 +9,17 @@
 //	Ongoing: 2022-07-09T02:28:41AEST (example <of/for>) saving/restoring registers to/from stack for function call
 //	Ongoing: 2022-07-09T13:46:57AEST Frame Pointer vs Stack Pointer
 //	Ongoing: 2022-07-09T14:34:37AEST 'sub fp, sp, #16; sub sp, sp, #16' is equivalent to 'sub sp, sp, #16; mov fp, sp'?
+//	Ongoing: 2022-07-09T15:00:33AEST when does FP get set? 
+//	Ongoing: 2022-07-09T15:02:00AEST does our example need to store LR/FP when it does not call any functions?
+//	Ongoing: 2022-07-09T16:02:22AEST what a function should push to the stack (lr, fp) or (fp, ip, lr, pc)?
 //	}}}
 
 //	A Stack (LIFO queue) is an area of memory with two operations:
 //			Push
 //			Pop
 //	ARM Requires that SP is always 16-byte aligned - we can only add/subtract multiples of 16.
-//	The Stack grows downward. The Stack Pointer (SP) points to the last element on the stack.
+//	The Stack grows downward. 
+//	The Stack Pointer (SP) points to the last element on the stack.
 
 //	Copy single register to stack: (wasting 8-bytes to keep alignment)
 //			STR X0, [SP, #-16]!
@@ -84,12 +88,19 @@
 //	<(SP = where local data is, FP = where last local data is)>
 //	<(When using FP, push it at the beginning of the function and pop it at the end)>
 //			SUB FP, SP, #16
+//	<(FP contains (because we put it there) the SP for the function, (after we have saved our registers to the stack, but before we grow the stack in the function for local variables?))>
+//	<(Current scope is everything between SP and FP inclusive?)>
+
 
 
 //	'.equ' directive:
 //			.equ varname, <value>
 //	Defines a variable that can be used as '#varname'.
 //	Instances of this variable will have their value substituted by the assembler.
+
+
+//	In ARM, it is legal to set PC to return address instead of returning:
+//			MOV PC, LR
 
 .global _start
 
@@ -103,7 +114,7 @@ _start:
 	adrp 	x1, outstr@PAGE
 	add x1, x1, outstr@PAGEOFF
 	mov x2, #255			//	max_len(outstr)
-	bl 		toupper
+	//bl 		toupper
 
 	
 	//	Call 'hex2str(x0, hexstr)
@@ -111,7 +122,7 @@ _start:
 	movk x0, #0x1234, LSL #16
 	movk x0, #0xABCD, LSL #32
 	movk x0, #0x1234, LSL #48
-	bl 		hex2str
+	//bl 		hex2str
 
 
 	//	Store variables on stack using SP
@@ -127,8 +138,6 @@ _start:
 	bl 	fpexample
 	b 	fpexamplecontinue
 fpexample:
-	//	Ongoing: 2022-07-09T15:00:33AEST when does FP get set? 
-	//	Ongoing: 2022-07-09T15:02:00AEST does our example need to store LR/FP when it does not call any functions?
 	//	Continue: 2022-07-09T14:59:09AEST Example use of FP
 	//	{{{
 	//.equ var1, 0
@@ -146,8 +155,70 @@ fpexample:
 	//add sp, sp, #32							//	decrease stack 16-bytes
 	//ldp lr, fp, [sp], #16					//	restore LR, FP from stack
 	//	}}}
+	//	{{{
+	//mov fp, sp
+	//stp lr, fp, [sp, #-16]!
+	//#sub fp, sp, #16
+	//sub sp, sp, #16
+	////mov x0, sp
+	////bl 		hex2str
+	////mov x0, fp
+	////bl 		hex2str
+	//mov x0, fp
+	//bl 		hex2str
+	//mov x0, sp
+	//bl 		hex2str
+	//add x2, x0, x1
+	//str x0, [sp, #0]
+	//str x1, [sp, #-8]
+	//str x2, [sp, #-16]
+	//add sp, sp, #16
+	//ldp lr, fp, [sp], #16
+	//	}}}
+	//	LINK: https://bob.cs.sonoma.edu/IntroCompOrg-RPi/sec-stack-manage.html
+	//	LINK: https://www.youtube.com/watch?v=7fezHk7nmzY
+	//	{{{
+	//sub sp, sp, #16					//	store FP/LR on stack
+	//str fp, [sp, #0]				//	[SP] = old FP 
+	//str lr, [sp, #8]
+	//add fp, sp, #8					//	FP = start of saved registers
+	//sub sp, sp, #32
+	//add x2, x0, x1
+	//str x0, [fp, #-16]	//	[sp, #24]
+	//str x1, [fp, #-24]	//	[sp, #16]
+	//str x2, [fp, #-32]	//	[sp, #8]
+	//add sp, sp, #32
+	//ldr fp, [sp, #0]
+	//ldr lr, [sp, #8]
+	//add sp, sp, #16
+	//ret
+	//	}}}
+	sub sp, sp, #16
+	str fp, [sp, #0]
+	str lr, [sp, #8]
+	mov fp, sp			//	FP points to old-SP (SP once FP/LR have been saved)
+
+	sub sp, sp, #32
+	add x2, x0, x1
+
+	str x0, [sp, #0]	//	[fp, #-32]
+	str x1, [sp, #8]	//	[fp, #-24]
+	str x2, [sp, #16]	//	[fp, #-16]
+
+	ldr x0, [fp, #-32]	//	[sp, #0]
+	ldr x1, [fp, #-24]	//	[sp, #8]
+	ldr x2, [fp, #-16]	//	[sp, #16]
+
+	mov sp, fp
+	ldr fp, [sp, #0]
+	ldr lr, [sp, #8]
+	add sp, sp, #16
 	ret
 fpexamplecontinue:
+
+
+	//	Example: Callee saved variables
+	//	<>
 
 
 	//	Write 'donemsg'
