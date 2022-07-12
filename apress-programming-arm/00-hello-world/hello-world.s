@@ -38,11 +38,14 @@
 //	Move:				
 //			mov{S}{cond} Rd, Operand2
 //			mov{cond} Rd, #imm16
-//		
+
 //	Register-Relative: 	
 //	Generate a PC-relative address in 'Rd' for 'label' (must be within limited distance of current instruction).
 //			adr{cond}{.W} Rd, label
-//
+
+//	Address of page at PC-relative offset:
+//			adrp Xd, label
+
 //	Supervisor (syscall)
 //	Causes an exception (switch processor to supervisor mode)
 //			svc{cond} #imm
@@ -62,6 +65,7 @@ _start:
 	//	<(can't use ldr?)>
 	adr x1, helloworld
 	//ldr x1, =helloworld
+	//	Ongoing: 2022-07-12T22:27:35AEST use of 'adr x1, helloworld' vs 'adrp x1, helloworld@PAGE; add x1, x1, helloworld@PAGEOFF'? [...] (label used with 'adr' must be in same code section?)
 
 	//	12 = length of string
 	mov x2, #12
