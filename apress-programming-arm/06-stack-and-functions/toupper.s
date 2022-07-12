@@ -43,7 +43,7 @@ toupcontinue:
 	cmp w5, #0					//	continue if w5 is not null-byte
 	b.ne 	toupperloop
 toupbreak:
-	sub	x8, x4, x1  			//	Return length of string placed in x8
+	sub	x8, x4, x1  			//	length of result placed in x8
 
 	//	Print 'outstr' (result)
 	mov x2, x8 					//	len(outstr)
@@ -59,7 +59,7 @@ toupbreak:
 	mov x16, #4					//	4 = write syscall
 	svc 0
 
-	mov x0, x8					//	Return length of string placed in x0
+	mov x0, x8					//	Return length of result
 	ret	
 
 .data
