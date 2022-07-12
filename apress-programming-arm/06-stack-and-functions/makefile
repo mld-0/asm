@@ -1,4 +1,5 @@
-OBJS = stack-and-functions.o hex2str.o toupper.o
+
+OBJS = stack-and-functions.o hex2str.o toupper.o framepointer.o
 
 ifdef DEBUG
 DEBUGFLGS = -g
