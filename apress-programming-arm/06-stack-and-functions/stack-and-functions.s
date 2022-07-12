@@ -136,7 +136,7 @@ _start:
 	bl 		framepointer
 
 
-	//	Example: Callee saved variables
+	//	Example: Callee saved (call-preserved) variables
 	//	<>
 
 

@@ -16,6 +16,7 @@
 //		w5			current character
 //		x6			loop count
 //		x7			input string pointer 
+//		x8			length of converted string
 //	Returns:
 //		x0			length of converted string
 
@@ -42,10 +43,10 @@ toupcontinue:
 	cmp w5, #0					//	continue if w5 is not null-byte
 	b.ne 	toupperloop
 toupbreak:
-	sub	x0, x4, x1  			//	Return length of string placed in x0
+	sub	x8, x4, x1  			//	Return length of string placed in x8
 
 	//	Print 'outstr' (result)
-	mov x2, x0 					//	len(outstr)
+	mov x2, x8 					//	len(outstr)
 	mov x0, #1					//	1 = stdout
 	mov x16, #4					//	4 = write syscall
 	svc 0
@@ -58,8 +59,7 @@ toupbreak:
 	mov x16, #4					//	4 = write syscall
 	svc 0
 
-
-	mov x0, x2					//	Return length of string placed in x0
+	mov x0, x8					//	Return length of string placed in x0
 	ret	
 
 .data
