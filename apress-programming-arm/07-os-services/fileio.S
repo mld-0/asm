@@ -19,7 +19,7 @@
 //		'fileName' is a string variable <label?>
 //		'flags' <(is a constant?)>
 //		'buffer' is a variable <label?> we can write our string into
-//		'length' gives the size of the buffer
+//		'length' gives the size of the buffer (can be either register/label)
 
 
 //	macOS Specific file-io constants:
@@ -37,12 +37,12 @@
 	svc #0x80
 .endm
 
-//	Returns <?>
+//	Returns x0 = <(number of characters/bytes read)> 
 .macro 	readFile 		fd, buffer, length
 	mov x0,		\fd						//	file descriptor
 	adrp 	x1, \buffer@PAGE			//	&buffer
 	add x1, x1, \buffer@PAGEOFF
-	mov x2, 	#\length				//	len(buffer)
+	mov x2, 	\length					//	len(buffer)
 	mov x16,	#SYS_read				//	read syscall
 	svc  #0x80
 .endm
@@ -52,7 +52,7 @@
 	mov x0, 	\fd						//	file descriptor
 	adrp 	x1, \buffer@PAGE			//	&buffer
 	add x1, x1, \buffer@PAGEOFF
-	mov x2, 	#\length				//	len(buffer)
+	mov x2, 	\length					//	len(buffer)
 	mov x16,	#SYS_write				//	write syscall
 	svc #0x80
 .endm
