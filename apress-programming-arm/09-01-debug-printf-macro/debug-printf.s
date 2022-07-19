@@ -13,8 +13,8 @@
 //		reg:		must be a register number (as literal integer, '3' is valid but '#3' is not)
 .macro 		printf_reg		reg
 	push_registers
-	mov x1, #\reg + '0'				//	%c
 	mov x2, x\reg 					//	%lx, %ld
+	mov x1, #\reg + '0'				//	%c
 	mov FP, SP
 	sub SP, SP, #32
 	str x1, [SP, #0]
