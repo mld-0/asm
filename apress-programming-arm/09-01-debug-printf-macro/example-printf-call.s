@@ -6,10 +6,15 @@
 //	{{{
 //	Ongoing: 2022-07-19T22:53:46AEST (cleaner) (more explicit/consistent) pushing/popping [...] (make clear how to pass variables on the stack of a variadic function) ... (printing a range of memory?) 
 //	Ongoing: 2022-07-19T22:54:54AEST what do we have to do to make '_printf()' available? [...] what other functions are available?
+//	Ongoing: 2022-07-20T00:42:36AEST saving 'FP' (x29) is optional(?) [...] ((implying) 'LR' (x30) is the only register we <need> to save?)
 //	}}}
 
-//	'_printf' takes the address of a string as x0. The remaining arguments are variatic. 
-//	On Apple Silicon (Darwin), variatic arguments are passed, 8-byte-aligned, on the stack.
+//	LINK: https://stackoverflow.com/questions/69454175/calling-printf-from-aarch64-asm-code-on-apple-m1-macos
+//	LINK: https://developer.apple.com/documentation/xcode/writing-arm64-code-for-apple-platforms
+
+//	'printf()' is a variadic function. On Apple Silicon (Darwin), variadic arguments must be passed on the stack 
+//	<(these arguments <should/must> be 8-byte aligned?)>
+//	Stack pointer SP must be 16 byte aligned.
 
 .text
 .align 2
@@ -17,13 +22,13 @@
 _start:
 
 printf_teststr:
-	stp FP, LR, [SP, #-16]!			//	push FP, LR
+	stp FP, LR, [SP, #-16]!			//	push FP (x29), LR (x30)
 
 	adrp 	x0, teststr@PAGE		//	x0 = &teststr
 	add x0, x0, teststr@PAGEOFF
 	mov x10, #65					//	65 = 'a'
 	mov x2, #1234
-	mov x3, #2845
+	mov x3, #9876
 
 	mov FP, SP						//	save arguments on stack
 	sub SP, SP, #32
