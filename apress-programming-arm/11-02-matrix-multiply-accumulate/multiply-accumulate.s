@@ -31,18 +31,18 @@
 .equ WDSIZE, 4				//	size of elements <(bytes?)>
 
 	//	Multiply 3x3 integer matricies:
-	//	<(	x0		loop counter ?)>
+	//		x0		dotloop/printloop counter 
 	//		w1		row_index
 	//		w2		col_index
-	//		x4		row_address
-	//		x5		col_address
+	//		x4		row_pointer
+	//		x5		col_pointer
+	//		x12		dotloop_row_pointer
+	//		x6		dotloop_col_pointer
 	//		x7		sum
-	//		w9		A_cell
-	//		w10		B_cell
-	//		x19		C_position
-	//		x20		loop counter
-	//		x12		dotloop_row
-	//		x6		dotloop_col
+	//		w9		A_element
+	//		w10		B_element
+	//		x19		C_pointer
+	//		x20		printloop counter
 
 _start:
 
@@ -51,13 +51,13 @@ matrix_multiply:
 	stp x19, x20, [SP, #-16]!
 
 	mov w1, #MATRIX_N							//	row_index
-	adrp 	x4, A@PAGE							//	currrent row (in A)
+	adrp 	x4, A@PAGE							//	start (in A)
 	add x4, x4, A@PAGEOFF
-	adrp 	x19, C@PAGE							//	current position (in C)
+	adrp 	x19, C@PAGE							//	start (in C)
 	add x19, x19, C@PAGEOFF
 
 row_loop:
-	adrp 	x5, B@PAGE							//	first column in B
+	adrp 	x5, B@PAGE							//	start (in B)
 	add x5, x5, B@PAGEOFF
 	mov w2, #MATRIX_N							//	col_index = [MATRIX_N, 0)
 
