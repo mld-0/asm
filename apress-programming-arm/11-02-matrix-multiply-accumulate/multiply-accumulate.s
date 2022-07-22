@@ -1,10 +1,12 @@
-#	{{{3
-#   vim: set tabstop=4 modeline modelines=10:
-#   vim: set foldlevel=2 foldcolumn=2 foldmethod=marker:
-#	{{{2
+//	{{{3
+//	vim: set tabstop=4 modeline modelines=10:
+//	vim: set foldlevel=2 foldcolumn=2 foldmethod=marker:
+//	{{{2
+//	Ongoings:
+//	{{{
 //	Ongoing: 2022-07-20T19:04:54AEST algorithm works for different values of 'MATRIX_N'?
 //	Ongoing: 2022-07-20T19:39:34AEST how generalisable is 'strf_row'? ((it is) not usable with different values of 'MATRIX_N')
-
+//	}}}
 
 //	Multiply and Accumulate is a common linear algebra instruction.
 //	(Most multiply instructions are aliases for multiply-accumulate instructions with XZR as Xa)
