@@ -11,6 +11,7 @@
 
 //	Multiplication:
 //	The product of two 64-bit numbers is 128-bits.
+//	Integer multiplication is slower than addition.
 
 //	Lower 64-bits of Multiply Result:
 //			MUL 	Xd, Xn, Xm
@@ -34,12 +35,14 @@
 //			UMNEGL	Xd, Wn, Wm			(unsigned)
 
 //	Signed vs Unsigned Multiplication:
+//	<(why there is no 'UMUL'?)>
 //	<>
 
 
 //	Division:
-//	64-bit ARM proccessors are required to have integer division (whereas some 32-bit ARM processors did not).
-//	<(Integer division is even more problematic than integer multiplication?)>
+//	64-bit ARM proccessors are required to have (hardware?) integer division 
+//	(Whereas some 32-bit ARM processors did not).
+//	Integer division is slower than multiplication.
 
 //	Divide:
 //			SDIV	Xd, Xn, Xm			(signed)
@@ -48,9 +51,11 @@
 //	There is no 'S' equivalent to set conditional flags.
 //	Doesn't throw exception for division by zero (incorrectly returns 0)
 //	Performs integer division (discards remainder)
-//	<(Get remainder with:)> remainder = numerator - (quotient * denominator)
+//		remainder = numerator - (quotient * denominator)
 
-//	Need to use floating-point processor to divide 128-bit numbers
+//	<(Integer division is not the inverse of integer multiplication?)>
+
+//	<ARM> Needs to use floating-point processor to divide 128-bit numbers
 
 //	Signed vs Unsigned Division:
 //	<>
