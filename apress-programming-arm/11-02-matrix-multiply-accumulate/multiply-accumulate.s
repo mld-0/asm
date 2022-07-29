@@ -26,27 +26,29 @@
 //			UMSUBL	Xd, Wn, Wm, Xa
 
 .include "debug-printf.s"
+.include "debug-timing.s"
 .global _start
 .align 4
+
+//	Multiply 3x3 matricies, register usage:
+//		x0		dotloop/printloop counter 
+//		w1		row_index
+//		w2		col_index
+//		x4		row_pointer
+//		x5		col_pointer
+//		x12		dotloop_row_pointer
+//		x6		dotloop_col_pointer
+//		x7		sum
+//		w9		A_element
+//		w10		B_element
+//		x19		C_pointer
+//		x20		printloop counter
 
 .equ MATRIX_N, 3			//	matrix dimensions 
 .equ WDSIZE, 4				//	size of elements <(bytes?)>
 
-	//	Multiply 3x3 integer matricies:
-	//		x0		dotloop/printloop counter 
-	//		w1		row_index
-	//		w2		col_index
-	//		x4		row_pointer
-	//		x5		col_pointer
-	//		x12		dotloop_row_pointer
-	//		x6		dotloop_col_pointer
-	//		x7		sum
-	//		w9		A_element
-	//		w10		B_element
-	//		x19		C_pointer
-	//		x20		printloop counter
-
 _start:
+	timer_start
 
 matrix_multiply:
 	str LR, [SP, #-16]!							//	push LR, x19-20
@@ -104,13 +106,14 @@ print_loop:
 	add SP, SP, #32
 	subs w20, w20, #1
 	b.ne 	print_loop
-	
+
 	ldp x19, x20, [SP], #16						//	pop LR, x19-20
 	ldr LR, [SP], #16
 	b 	done
 
 
 done:
+	timer_elapsed
 	printf_str 	"Done"
 	mov x0, #0
 	ret
