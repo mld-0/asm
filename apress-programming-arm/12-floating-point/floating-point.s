@@ -11,7 +11,10 @@
 #	Ongoing: 2022-07-30T01:34:56AEST printf "%f" is hiding part of our decimal (how to get printf to print the <exact/actual> value of a double?
 #	Ongoing: 2022-07-30T01:41:21AEST (How much work is required for) printf converting double to string (for) '%f'?
 #	Ongoing: 2022-07-30T01:50:48AEST printing more decimal places than float supports results in incorrect values (not .****00000)
+#	Ongoing: 2022-08-01T23:33:40AEST When is '.align 4' necessary?
+#	Ongoing: 2022-08-01T23:35:44AEST C, conversion float->int, (when is it rounded towards 0 vs rounded towards +/- inf?) -> '(int) x' uses FCVTZS
 #	}}}
+
 #	Continue: 2022-07-30T02:15:24AEST review 'floating-point-is-hard' series (see worklog)
 
 #	The ARM FPU (floating-point unit) performs floating point calculations as well as limited SIMD instructions.
@@ -109,7 +112,7 @@
 #			%A			FP hex representation
 #			%f			floating point (<round/truncate> small values)
 #			%e			scientific notation
-#			%g			
+#			%g			<>
 
 #	Print floating point numbers losslessly:
 #	(such that they can be read back in to exactly the same number, except NaN and Infinity)
@@ -139,10 +142,14 @@ pushpop_fp_reg:
 	ldp q8, q9, [SP], #32
 
 
-#	Continue: 2022-07-30T04:32:58AEST 'fp_int_conversion', 'normalized_form'
 fp_int_conversion:
-	#	<>
+	mov w0, #53
+	scvtf s0, w0 				//	int -> float
+	fcvt d0, s0 				//	float -> double
+	fcvtzs w0, d0 				//	double -> int
 
+
+#	Continue: 2022-08-01T23:01:45AEST 'normalized_form'
 normalized_form:
 	#	<>
 
@@ -164,7 +171,7 @@ call_distance_f:
 
 
 call_distance_d:
-	adrp 	x0, d_AB@PAGE
+	adrp 	x0, d_AB@PAGE 
 	add x0, x0, d_AB@PAGEOFF
 	bl 	distance_d
 
@@ -174,27 +181,46 @@ call_distance_d:
 	bl 	_printf
 	add SP, SP, #16
 
+	printf_str 		""
+
 
 call_fp_compare:
+	printf_str 		"fp_compare:"
+
 	adrp 	x0, f_abc@PAGE
 	add x0, x0, f_abc@PAGEOFF
 	bl 	fp_compare_f
-	printf_reg 	0
-
-	adrp 	x0, f_def@PAGE
-	add x0, x0, f_def@PAGEOFF
-	bl 	fp_compare_f
-	printf_reg 	0
-
-	adrp 	x0, d_abc@PAGE
-	add x0, x0, d_abc@PAGEOFF
-	bl 	fp_compare_d
 	printf_reg 	0
 
 	adrp 	x0, d_def@PAGE
 	add x0, x0, d_def@PAGEOFF
 	bl 	fp_compare_d
 	printf_reg 	0
+
+	printf_str 		""
+
+
+eg_runsum:
+	adrp 	x0, cent@PAGE										//	d0 = cent
+	add x0, x0, cent@PAGEOFF
+	ldr d0, [x0]
+	adrp 	x0, sum_initial@PAGE								//	d1 = sum_initial
+	add x0, x0, sum_initial@PAGEOFF
+	ldr d1, [x0]
+	adrp 	x0, sum_N@PAGE 										//	w1 = sum_N
+	add x0, x0, sum_N@PAGEOFF
+	ldr w1, [x0]
+1:																//	while (w1 > 0)
+	fadd d1, d1, d0 											//	d1 += d0
+	subs w1, w1, #1												//	w1 -= 1
+	b.ne 	1b
+
+	adrp 	x0, str_printf_sum_d@PAGE 							//	printf(str_printf_sum_d, d1)
+	add x0, x0, str_printf_sum_d@PAGEOFF
+	fmov x1, d1
+	str x1, [SP, #-16]!
+	bl 	_printf
+	add SP, SP, #16
 
 
 done:
@@ -220,8 +246,13 @@ done:
 	d_def:	.double 	0.1, 0.11, 0.001
 	.align 4
 
-	str_printf_float:	.asciz		"Distance = %.9g\n"
+	str_printf_float:	.asciz		"Distance = %.9g\n"			//	printf a float losslessly
 	.align 4
-	str_printf_double:	.asciz		"Distance = %.17g\n"
+	str_printf_double:	.asciz		"Distance = %.17g\n"		//	printf a double losslessly
 	.align 4
+
+	str_printf_sum_d: 	.asciz 		"Sum = %.17g\n"
+	cent:			.double 	0.01
+	sum_initial: 	.double 	0.0
+	sum_N:			.word		100
 
