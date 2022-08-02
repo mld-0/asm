@@ -1,0 +1,21 @@
+#	{{{3
+#   vim: set tabstop=4 modeline modelines=10:
+#   vim: set foldlevel=2 foldcolumn=2 foldmethod=marker:
+#	{{{2
+Running binary with lldb (basics):
+
+Launch:
+#>$		lldb a.out
+Set breakpoint to start:
+#>$		breakpoint set --name main
+Start:
+#>$		run
+Show registers:
+#>$		register read
+Frame (print current location)
+#>$		f
+
+
+LINK: https://aaronbloomfield.github.io/pdr/tutorials/02-lldb/index.html
+LINK: https://aaronbloomfield.github.io/pdr/docs/lldb_summary.html
+
