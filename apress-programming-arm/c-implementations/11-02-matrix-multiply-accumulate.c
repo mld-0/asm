@@ -12,6 +12,8 @@
 //	Ongoing: 2022-07-23T01:18:08AEST would it be faster to transpose B (so that when reading 'cols' of B, we actually read rows (being more cache friendly))
 //	}}}
 
+//	Continue: 2022-08-02T23:34:16AEST Can C++ perform any further optimizations if we provide N as a template parameter?
+
 //	<(In C, (in constrast to C++) use 'define' instead of const variable (error to use const-int as array length?))>
 #define MATRIX_N  3
 
@@ -62,54 +64,46 @@ int C[9];
 //}
 //	}}}
 
-void improved_variable_names() 
+void multiply_NxN(const int N, const int* const A, const int* const B, int* C)
 {
-	int row_index = MATRIX_N;
-
-	int* row_pointer = &A[0];
-	int* C_pointer = &C[0];
-	do {		
-		int* col_pointer = &B[0];
-		int col_index = MATRIX_N;
-
-		do {
+	const int *A_row = A;
+	int *pC = C;
+	for (int row_index = 0; row_index < N; ++row_index) {
+		const int *B_col = B;
+		for (int col_index = 0; col_index < N; ++col_index) {
 			int sum = 0;
-			int dot_index = MATRIX_N;
-			int* dot_row_pointer = row_pointer;
-			int* dot_col_pointer = col_pointer;
+			const int* pA = A_row;
+			const int* pB = B_col;
+			for (int dot_index = 0; dot_index < N; ++dot_index) {
+				sum += (*pA) * (*pB);
+				pA += 1; 
+				pB += 3;
+			}
+			*pC = sum;
+			B_col += 1;
+			pC += 1;
+		}
+		A_row += N;
+	}
+}
 
-			do {
-				int A_element = *dot_row_pointer++;
-				int B_element = *dot_col_pointer; 
-				dot_col_pointer += MATRIX_N;
-				sum = A_element * B_element + sum;
-				dot_index--;
-			} while (dot_index > 0);
-
-			*C_pointer++ = sum;
-			col_pointer++;
-			col_index--;
-		} while (col_index > 0);
-
-		row_pointer += MATRIX_N;
-		row_index--;
-	} while (row_index > 0);
-
-	int counter = MATRIX_N;
-	C_pointer = &C[0];
-	do {
-		int temp1 = *C_pointer++;
-		int temp2 = *C_pointer++;
-		int temp3 = *C_pointer++;
-		printf(strf_row, temp1, temp2, temp3);
-		counter--;
-	} while (counter > 0);
+void print_NxN(const int N, const int* A) 
+{
+	const int* pA = A;
+	for (int row_index = 0; row_index < N; ++row_index) {
+		for (int col_index = 0; col_index < N; ++col_index) {
+			printf("%5d ", *pA);
+			pA += 1;
+		}
+		printf("\n");
+	}
 }
 
 
 int main()
 {
-	improved_variable_names();
+	multiply_NxN(3, A, B, C);
+	print_NxN(3, C);
 	return 0;
 }
 
