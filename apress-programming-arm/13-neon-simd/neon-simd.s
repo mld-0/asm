@@ -7,6 +7,7 @@
 #	Ongoing: 2022-08-02T00:14:39AEST Use of 'V' vs 'Q' (book says Q is for NEON - then uses 'V' in NEON instructions?) [...] use 'Q' for load/store(?)
 #	Ongoing: 2022-08-02T00:31:58AEST FADD vs FADDP(?)
 #	Ongoing: 2022-08-02T00:37:12AEST Our (previous) use of '.align 2' (in function source files) is incorrect(?)
+#	Ongoing: 2022-08-03T03:47:32AEST (please) verify equivalency of 'add Vd.T, Vn.T, Vm.T' / 'ADD.T Vd, Vn, Vm' (name-of/reason-for having two formats (consider that 'otool' outputs the later)) - (must 'T' always be the same for each register of the former)
 #	}}}
 
 #	The NEON Coprocessor is responsible for single-instruction-multiple-data (SIMD) instructions.
@@ -25,9 +26,9 @@
 #									8-bit elements		16-bit elements			32-bit elements
 #			D (64-bits)				8					4						2
 #			<(Q/V?)> (128-bits)		16					8						4
-#	The regions containing each value are refered to as 'lanes'.
+#	The regions containing each value are referred to as 'lanes'.
 #	These lanes can be used for integer or floating-point data.
-#	Vector instructions are applied to each lane indervidually.
+#	Vector instructions are applied to each lane individually.
 
 #	Designators for lane size:
 #		D			64-bits
@@ -45,10 +46,14 @@
 #			ADD		Vd.T, Vn.T, Vm.T			//	integer
 #			FADD	Vd.T, Vn.T, Vm.T			//	floating-point
 #	Values of 'T':
-#		For 'ADD': 		8H, 16B, 4H, 8H, 2S, 4S, or 2D
-#		For 'FADD': 	4H, 8H, 2S, 4S, 2D
-
+#		ADD: 		8H, 16B, 4H, 8H, 2S, 4S, or 2D
+#		FADD: 		4H, 8H, 2S, 4S, 2D
 #	The NEON processor supports all <(common?)> integer <(and floating-point?)> instructions in this manner.
+
+#	Equivalent(?):
+#			ADD		Vd.T, Vn.T, Vm.T
+#			ADD.T	Vd, Vn, Vm
+
 
 
 
@@ -70,6 +75,7 @@ call_distance4d:
 1:
 	mov x0, x20
 	bl 	distance4d
+
 
 	fmov s2, w0
 	fcvt d0, s2
