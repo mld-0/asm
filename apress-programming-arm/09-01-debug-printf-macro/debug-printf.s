@@ -7,7 +7,55 @@
 //	Ongoing: 2022-07-20T00:21:10AEST '.text' '.align 2' ect. for macros source
 //	}}}
 
+//	Continue: 2022-08-03T17:26:57AEST add label string argument to print register macros
+
 //	These macros preseve all registers. Beware they will change the condition flags.
+
+
+//	'printf_[float|double]_reg(reg)'
+//		reg:		must be a register number (as literal integer, '3' is valid but '#3' is not)
+.macro 		printf_float_reg 	reg
+	push_registers
+	mov x1, #\reg + '0'
+	fmov s2, s\reg
+	fcvt d0, s2
+	fmov x2, d0
+	adrp 	x0, str_printf_float_reg@PAGE
+	add x0, x0, str_printf_float_reg@PAGEOFF
+	mov FP, SP
+	sub SP, SP, #32
+	str x1, [SP, #0]
+	str x2, [SP, #8]
+	str x2, [SP, #16]
+	bl 	_printf
+	mov SP, FP
+	pop_registers
+.endm
+.macro		printf_double_reg 	reg
+	push_registers
+	mov x1, #\reg + '0'
+	fmov x2, d\reg
+	adrp 	x0, str_printf_double_reg@PAGE
+	add x0, x0, str_printf_double_reg@PAGEOFF
+	mov FP, SP
+	sub SP, SP, #32
+	str x1, [SP, #0]
+	str x2, [SP, #8]
+	str x2, [SP, #16]
+	bl 	_printf
+	mov SP, FP
+	pop_registers
+.endm
+
+
+//	printf_memory_bytes(start,end): print a memory range as bytes
+//		start:		<(register containing start of memory range?)>
+//		end:		<(register containing end of memory range?)>
+.macro 		printf_memory_bytes 	start, end
+	push_registers
+	pop_registers
+.endm
+
 
 //	'printf_reg(reg)':
 //		reg:		must be a register number (as literal integer, '3' is valid but '#3' is not)
@@ -27,6 +75,7 @@
 	pop_registers
 .endm
 
+
 //	'printf_str(str)':
 //		str: 		must be a literal string
 .macro 		printf_str		str
@@ -40,7 +89,8 @@
 2: 	
 .endm
 
-//	Push/Pop [x0-18, LR] on/off stack <(160-bytes total?)>
+
+//	Push/Pop [x0-18, LR, q0-q7] on/off stack <(288-bytes total?)>
 .macro 		push_registers
 	stp 	x0, x1, [SP, #-16]!
 	stp 	x2, x3, [SP, #-16]!
@@ -52,9 +102,16 @@
 	stp 	x14, x15, [SP, #-16]!
 	stp 	x16, x17, [SP, #-16]!
 	stp 	x18, LR, [SP, #-16]!
+	stp 	q0, q1, [SP, #-32]!
+	stp 	q2, q3, [SP, #-32]!
+	stp 	q4, q5, [SP, #-32]!
+	stp 	q6, q7, [SP, #-32]!
 .endm
-
 .macro 		pop_registers
+	ldp 	q6, q7, [SP], #32
+	ldp 	q4, q5, [SP], #32
+	ldp 	q2, q3, [SP], #32
+	ldp 	q0, q1, [SP], #32
 	ldp 	x18, LR, [SP], #16
 	ldp 	x16, x17, [SP], #16
 	ldp 	x14, x15, [SP], #16
@@ -69,6 +126,10 @@
 
 .data
 	str_printf_reg: .asciz "x%c=(0x%016lX): %+ld\n"			//	change 'ld' to 'lu' for unsigned value
+	.align 4
+	str_printf_float_reg:	.asciz 	"s%c=(%A): %+.9g\n"
+	.align 4
+	str_printf_double_reg:	.asciz 	"s%c=(%A): %+.17g\n"
 	.align 4
 .text
 
