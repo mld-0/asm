@@ -5,12 +5,12 @@
 //	Ongoings:
 //	{{{
 //	Ongoing: 2022-07-20T00:21:10AEST '.text' '.align 2' ect. for macros source
+//	Ongoing: 2022-08-03T18:54:16AEST Using '.data' string variables vs strings embedded at a label in macro?
 //	}}}
 
 //	Continue: 2022-08-03T17:26:57AEST add label string argument to print register macros
 
 //	These macros preseve all registers. Beware they will change the condition flags.
-
 
 //	'printf_[float|double]_reg(reg)'
 //		reg:		must be a register number (as literal integer, '3' is valid but '#3' is not)
@@ -48,12 +48,32 @@
 .endm
 
 
-//	printf_memory_bytes(start,end): print a memory range as bytes
-//		start:		<(register containing start of memory range?)>
-//		end:		<(register containing end of memory range?)>
-.macro 		printf_memory_bytes 	start, end
+//	printf_memory_ints(start,end): print a memory range as integers
+//		start:		register containing start of memory range
+//		len:		number of bytes (as literal integer)
+.macro 		printf_memory_ints 		start, len
 	push_registers
+	mov x19, \start
+	mov x20, #\len
+	adrp 	x21, str_printf_int@PAGE
+	add x21, x21, str_printf_int@PAGEOFF
+1: 	ldr w3, [x19]
+	mov FP, SP
+	sub SP, SP, #16
+	mov x0, x21
+	str w3, [SP, #0]
+	bl 	_printf
+	mov SP, FP
+	add x19, x19, #4
+	subs x20, x20, #1
+	b.gt 	1b
+	adrp 	x0, str_printf_nl@PAGE
+	add x0, x0, str_printf_nl@PAGEOFF
+	bl 	_printf
 	pop_registers
+.endm
+
+.macro 		printf_memory_bytes		start, len
 .endm
 
 
@@ -125,6 +145,10 @@
 .endm
 
 .data
+	str_printf_int: .asciz "%i "
+	.align 4
+	str_printf_nl: 	.asciz 	"\n"
+	.align 4
 	str_printf_reg: .asciz "x%c=(0x%016lX): %+ld\n"			//	change 'ld' to 'lu' for unsigned value
 	.align 4
 	str_printf_float_reg:	.asciz 	"s%c=(%A): %+.9g\n"
