@@ -157,6 +157,11 @@
 	stp 	x14, x15, [SP, #-16]!
 	stp 	x16, x17, [SP, #-16]!
 	stp 	x18, LR, [SP, #-16]!
+	stp 	x19, x20, [SP, #-16]!
+	stp 	x21, x22, [SP, #-16]!
+	stp 	x23, x24, [SP, #-16]!
+	stp 	x25, x26, [SP, #-16]!
+	stp 	x27, x28, [SP, #-16]!
 	stp 	q0, q1, [SP, #-32]!
 	stp 	q2, q3, [SP, #-32]!
 	stp 	q4, q5, [SP, #-32]!
@@ -167,6 +172,11 @@
 	ldp 	q4, q5, [SP], #32
 	ldp 	q2, q3, [SP], #32
 	ldp 	q0, q1, [SP], #32
+	ldp 	x27, x28, [SP], #16
+	ldp 	x25, x26, [SP], #16
+	ldp 	x23, x24, [SP], #16
+	ldp 	x21, x22, [SP], #16
+	ldp 	x19, x20, [SP], #16
 	ldp 	x18, LR, [SP], #16
 	ldp 	x16, x17, [SP], #16
 	ldp 	x14, x15, [SP], #16
