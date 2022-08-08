@@ -83,7 +83,7 @@ void __attribute__ ((noinline)) multiply_NxN(const int* A, const int* B, int* C)
 			for (int dot_index = 0; dot_index < N; ++dot_index) {
 				sum += (*pA) * (*pB);
 				pA += 1; 
-				pB += 3;
+				pB += N;
 			}
 			*pC = sum;
 			B_col += 1;

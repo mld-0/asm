@@ -17,10 +17,16 @@
 //	<(In C, (in constrast to C++) use 'define' instead of const variable (error to use const-int as array length?))>
 #define MATRIX_N  3
 
-char* strf_row = "%3d  %3d  %3d\n";
-int A[MATRIX_N*MATRIX_N] = {1,2,3, 4,5,6, 7,8,9};
-int B[9] = {9,8,7, 6,5,4, 3,2,1};
-int C[9];
+char* strf_row = "%4d  %4d  %4d\n";
+const int A[MATRIX_N*MATRIX_N] = {1,2,3, 4,5,6, 7,8,9};
+const int B[MATRIX_N*MATRIX_N] = {9,8,7, 6,5,4, 3,2,1};
+int C[MATRIX_N];
+
+#define MATRIX_N2 	4
+const int A2[MATRIX_N2*MATRIX_N2] = {1,2,3,4, 4,3,2,1, 1,2,3,4, 4,3,2,1};
+const int B2[MATRIX_N2*MATRIX_N2] = {9,8,7,6, 6,7,8,9, 9,8,7,6, 6,7,8,9};
+int C2[MATRIX_N2*MATRIX_N2];
+
 
 //	register_variable_names():
 //	{{{
@@ -64,7 +70,7 @@ int C[9];
 //}
 //	}}}
 
-void multiply_NxN(const int N, const int* const A, const int* const B, int* C)
+void __attribute__ ((noinline)) multiply_NxN(const int N, const int* A, const int* B, int* C)
 {
 	const int *A_row = A;
 	int *pC = C;
@@ -77,7 +83,7 @@ void multiply_NxN(const int N, const int* const A, const int* const B, int* C)
 			for (int dot_index = 0; dot_index < N; ++dot_index) {
 				sum += (*pA) * (*pB);
 				pA += 1; 
-				pB += 3;
+				pB += N;
 			}
 			*pC = sum;
 			B_col += 1;
@@ -87,7 +93,7 @@ void multiply_NxN(const int N, const int* const A, const int* const B, int* C)
 	}
 }
 
-void print_NxN(const int N, const int* A) 
+void __attribute__ ((noinline)) print_NxN(const int N, const int* A) 
 {
 	const int* pA = A;
 	for (int row_index = 0; row_index < N; ++row_index) {
@@ -102,8 +108,14 @@ void print_NxN(const int N, const int* A)
 
 int main()
 {
-	multiply_NxN(3, A, B, C);
-	print_NxN(3, C);
+	multiply_NxN(MATRIX_N, A, B, C);
+	print_NxN(MATRIX_N, C);
+	printf("\n");
+
+	multiply_NxN(MATRIX_N2, A2, B2, C2);
+	print_NxN(MATRIX_N2, C2);
+	printf("\n");
+
 	return 0;
 }
 
